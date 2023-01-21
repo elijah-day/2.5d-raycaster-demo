@@ -2,13 +2,13 @@ obj_files = \
 	src/main.o
 
 build_dir = build
-target_dir = $(build_dir)/ultvyu
+target_dir = $(build_dir)/raycaster
 
 CC = gcc
 CFLAGS =
 LIBS = -lSDL2 -lm
-TARGET = $(target_dir)/ultvyu
-run_method = ./ultvyu
+TARGET = $(target_dir)/raycaster
+run_method = ./raycaster
 
 all: build run
 

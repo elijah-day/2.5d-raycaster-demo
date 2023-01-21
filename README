@@ -1,6 +1,6 @@
 Copyright (C) 2022 Elijah Day
 
-Simple SDL2 ray casting test.  (WORK IN PROGRESS)
+Simple SDL2 raycasting test.  Walk around a room in a first-person perspective.
 
 This software is distributed under the MIT license.  See LICENSE for more information.
 

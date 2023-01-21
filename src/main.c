@@ -7,16 +7,16 @@
 
 #define PI 3.14
 
-#define ROTATION_SPEED PI / 128
-#define MOVEMENT_SPEED 0.05
+#define ROTATION_SPEED PI / 2048
+#define MOVEMENT_SPEED 0.01
 
-#define VIEWLINE_LENGTH 64
+#define VIEWLINE_LENGTH 8
 #define WALL_SIZE 4
 
 #define RAY_COUNT 64
-#define RAY_ANGLE (PI / ((96 / 32) * RAY_COUNT))
+#define RAY_ANGLE (PI / ((3) * RAY_COUNT))
 
-#define RENDER_SCALE 8
+#define RENDER_SCALE 4
 #define WINDOW_WIDTH 640
 #define WINDOW_HEIGHT 360
 
@@ -34,41 +34,6 @@ Entity;
 
 int main(int argc, char *argv[])
 {
-	/*Misc. dirent testing.*/
-
-	/*
-	const char *dirstr = "../../";
-
-	struct dirent *entry = NULL;
-	DIR *dir = opendir(dirstr);
-
-	if(dir == NULL)
-	{
-		printf("opendir error\n");
-		return 1;
-	}
-	
-	while((entry = readdir(dir)) != NULL)
-	{
-		if(entry)
-		{
-			char fstr[64];
-			strcpy(fstr, dirstr);
-			strcat(fstr, entry->d_name);
-			printf("%s\n", fstr);
-			FILE *fp = fopen(fstr, "r");
-			
-			if(fp != NULL)
-			{
-				printf("%c\n", fgetc(fp));
-				fclose(fp);
-			}
-		}
-	}
-	
-	closedir(dir);
-	*/
-	
 	bool running_state = true;
 	
 	if(SDL_Init(SDL_INIT_VIDEO) != 0)
@@ -108,32 +73,40 @@ int main(int argc, char *argv[])
 	
 	int wall_count = 0;
 	
-	bool room[8][8] =
+	bool room[16][16] =
 	{
-		{0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 1, 0, 0, 1, 0, 1, 1},
-		{0, 1, 0, 0, 0, 0, 0, 0},
-		{0, 1, 1, 0, 0, 0, 0, 0},
-		{0, 1, 0, 0, 1, 0, 0, 1},
-		{0, 0, 0, 0, 1, 0, 1, 0},
-		{0, 0, 0, 0, 1, 0, 0, 0},
-		{0, 1, 0, 0, 1, 0, 0, 1}
+		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+		{1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1},
+		{1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1},
+		{1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1},
+		{1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1},
+		{1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1},
+		{1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1},
+		{1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1},
+		{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+		{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+		{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1},
+		{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+		{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+		{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 	};
 	
-	for(int i = 0; i < 8; i++)
+	for(int i = 0; i < 16; i++)
 	{
-		for(int j = 0; j < 8; j++)
+		for(int j = 0; j < 16; j++)
 		{
 			if(room[i][j] == true) wall_count++;
 		}
 	}
 	
 	Wall walls[wall_count];
-	
+
 	int wcounter = 0;
-	for(int i = 0; i < 8; i++)
+	for(int i = 0; i < 16; i++)
 	{
-		for(int j = 0; j < 8; j++)
+		for(int j = 0; j < 16; j++)
 		{
 			if(room[i][j] == true)
 			{
@@ -147,13 +120,15 @@ int main(int argc, char *argv[])
 	printf("%d\n", wall_count);
 	
 	Entity player;
-	player.x= 0;
-	player.y = 0;
+	player.x= 16;
+	player.y = 16;
 	player.theta = 0;
 	
 	bool minimap_toggle = true;
 	int win_w = 0;
 	int win_h = 0;
+	
+	int r, g, b;
 	
 	int wall_line_scale = 96;
 	
@@ -162,17 +137,19 @@ int main(int argc, char *argv[])
 	bool sdl_keys[322];
 	memset(sdl_keys, false, 322);
 	
+	SDL_Rect wlrect;
+	
 	SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 
 	SDL_Event event;
-	while(running_state) while(SDL_PollEvent(&event))
+	while(running_state)
 	{
 		float ppx = player.x;
 		float ppy = player.y;
 	
 		SDL_GetWindowSize(window, &win_w, &win_h);
 		
-		switch(event.type)
+		while(SDL_PollEvent(&event)) switch(event.type)
 		{
 			case SDL_QUIT:
 				running_state = false;
@@ -186,26 +163,10 @@ int main(int argc, char *argv[])
 					case SDL_SCANCODE_M:
 						minimap_toggle = !minimap_toggle;
 						break;
-						
-					case SDL_SCANCODE_O:
-						wall_line_scale -= 4;
-						break;
-					
-					case SDL_SCANCODE_P:
-						wall_line_scale += 4;
-						break;
-						
-					case SDL_SCANCODE_K:
-						brightness -= 1;
-						break;
-						
-					case SDL_SCANCODE_L:
-						brightness += 1;
-						break;
 				}
 				
 				break;
-				
+			
 			case SDL_KEYUP:
 				sdl_keys[event.key.keysym.scancode] = false;
 				break;
@@ -237,24 +198,22 @@ int main(int argc, char *argv[])
 			player.y += MOVEMENT_SPEED * sin(player.theta + PI / 2);
 		}
 		
+		if(sdl_keys[SDL_SCANCODE_O]) wall_line_scale -= 1;
+		if(sdl_keys[SDL_SCANCODE_P]) wall_line_scale += 1;
+		
+		
+		
 		/*Draw BG*/
-		SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
+		SDL_SetRenderDrawColor(renderer, 54, 54, 22, 255);
 		SDL_RenderFillRect(renderer, NULL);
 		
 		/*Draw Floor*/
-		for(int k = 1; k < win_h / 2; k++)
-		{
-			SDL_SetRenderDrawColor(renderer, win_h / k, win_h / k, win_h / k, 255);
-		
-			SDL_RenderDrawLine
-			(
-				renderer,
-				0,
-				win_h / 2 + k,
-				win_w,
-				win_h / 2 + k
-			);
-		}
+		wlrect.x = 0;
+		wlrect.y = win_h / 2;
+		wlrect.w = win_w;
+		wlrect.h = win_h / 2;
+		SDL_SetRenderDrawColor(renderer, 64, 64, 32, 255);
+		SDL_RenderFillRect(renderer, &wlrect);
 		
 		/*Raycasting*/
 		for(int k = 0; k < RAY_COUNT; k++)
@@ -264,7 +223,6 @@ int main(int argc, char *argv[])
 			float rlength = 0;
 			float rtheta = player.theta;
 			bool ray_hit_state = false;
-			SDL_Rect wlrect;
 		
 			while(!ray_hit_state && rlength < VIEWLINE_LENGTH)
 			{
@@ -289,15 +247,23 @@ int main(int argc, char *argv[])
 					}
 				}
 				
-				rlength += 1;
+				rlength += 0.1;
 			}
+			
+			r = (int)(192.0 / rlength);
+			g = (int)(192.0 / rlength);
+			b = (int)(96.0 / rlength);
+			
+			if(r > 191) r = 191;
+			if(g > 191) g = 191;
+			if(b > 191) b = 191;
 			
 			SDL_SetRenderDrawColor
 			(
 				renderer,
-				brightness * 255 / rlength,
-				brightness * 255 / rlength,
-				brightness * 255 / rlength,
+				r,
+				g,
+				b,
 				255
 			);
 			
